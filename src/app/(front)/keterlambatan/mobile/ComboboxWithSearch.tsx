@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Fuse from "fuse.js"
 import { ChevronsUpDown } from "lucide-react"
 import {
   Command,
@@ -38,8 +39,18 @@ export function ComboboxWithSearch({
   disabled = false,
 }: ComboboxWithSearchProps) {
   const [open, setOpen] = React.useState(false)
+  const [query, setQuery] = React.useState("")
 
   const selected = options.find((opt) => opt.value === value)
+
+  const fuse = new Fuse(options, {
+    keys: ["label"],
+    threshold: 0.4,
+  })
+
+  const filteredOptions = query
+    ? fuse.search(query).map(result => result.item)
+    : options
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -55,32 +66,35 @@ export function ComboboxWithSearch({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput placeholder="Cari..." className="h-9" />
+      <PopoverContent
+        className="p-0"
+        style={{ width: "var(--radix-popover-trigger-width)" }}
+      >
+        <Command className="w-full">
+          <CommandInput
+            placeholder="Cari..."
+            className="h-9 w-full"
+            onValueChange={(val) => setQuery(val)}
+          />
           <CommandEmpty>Data tidak ditemukan</CommandEmpty>
-          <CommandGroup>
-            {options.map((opt) => (
-              <CommandItem
-                key={opt.value}
-                onSelect={() => {
-                  if (!opt.disabled) {
-                    onChange(opt.value)
-                    setOpen(false)
-                  }
-                }}
-                disabled={opt.disabled}
-              >
-                {/* <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === opt.value ? "opacity-100" : "opacity-0"
-                  )}
-                /> */}
-                {opt.label}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <div className="max-h-60 overflow-y-auto">
+            <CommandGroup>
+              {filteredOptions.map((opt) => (
+                <CommandItem
+                  key={opt.value}
+                  onSelect={() => {
+                    if (!opt.disabled) {
+                      onChange(opt.value)
+                      setOpen(false)
+                    }
+                  }}
+                  disabled={opt.disabled}
+                >
+                  {opt.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </div>
         </Command>
       </PopoverContent>
     </Popover>
