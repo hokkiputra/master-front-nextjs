@@ -30,11 +30,11 @@ const navMain = [
     url: "/keterlambatan",
     icon: IconClock,
   },
-  // {
-  //   title: "Keterlambatan Mobile",
-  //   url: "/keterlambatan/mobile",
-  //   icon: IconDeviceMobile,
-  // },
+  {
+    title: "Laran Keterlambatan",
+    url: "/laporan-keterlambatan",
+    icon: IconClock,
+  },
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

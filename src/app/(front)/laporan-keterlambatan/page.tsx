@@ -6,7 +6,6 @@ import { DataTable } from "@/components/layouts/data-table"
 import api from "@/lib/axios"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { format } from "date-fns"
 import { WithSidebar } from "@/components/layouts/with-sidebar"
 
 export default function LaporanKeterlambatanPage() {
@@ -15,7 +14,7 @@ export default function LaporanKeterlambatanPage() {
   const [tanggalAkhir, setTanggalAkhir] = useState("")
 
   const fetchData = () => {
-    const params: any = {}
+    const params: Record<string, string> = {}
     if (tanggalAwal) params.tanggal_awal = tanggalAwal
     if (tanggalAkhir) params.tanggal_akhir = tanggalAkhir
     api.get("/laporan/keterlambatan", { params }).then(res => {
@@ -31,6 +30,7 @@ export default function LaporanKeterlambatanPage() {
     window.open(`https://sahil-api.perintisilmu.sch.id/api/laporan/keterlambatan/export?${params.toString()}`, "_blank")
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchData()
   }, [])

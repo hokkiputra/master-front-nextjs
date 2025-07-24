@@ -19,7 +19,6 @@ interface FormDialogProps {
 export function FormDialog({ open, onClose, onSubmit, initialData, errors, setErrors }: FormDialogProps) {
   const [form, setForm] = useState<Partial<Keterlambatan>>({})
   const [siswaList, setSiswaList] = useState<Siswa[]>([])
-
   useEffect(() => {
     api.get("/siswas").then(res => setSiswaList(res.data.data))
     if (initialData) {
@@ -28,6 +27,7 @@ export function FormDialog({ open, onClose, onSubmit, initialData, errors, setEr
       setForm({ status: "terlambat" })
     }
     setErrors({})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData])
 
   return (
