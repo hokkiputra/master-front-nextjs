@@ -31,7 +31,7 @@ const navMain = [
     icon: IconClock,
   },
   {
-    title: "Laran Keterlambatan",
+    title: "Laporan Keterlambatan",
     url: "/laporan-keterlambatan",
     icon: IconClock,
   },
