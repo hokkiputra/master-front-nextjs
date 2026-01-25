@@ -21,6 +21,11 @@ import {
 
 const navMain = [
   {
+    title: "Keterlambatan Sholat",
+    url: "/keterlambatan-sholat",
+    icon: IconUser,
+  },
+  {
     title: "Data Siswa",
     url: "/siswa",
     icon: IconUser,
@@ -31,8 +36,18 @@ const navMain = [
     icon: IconClock,
   },
   {
+    title: "Keterlambatan Sholat List",
+    url: "/keterlambatan-sholat-list",
+    icon: IconClock,
+  },
+  {
     title: "Laporan Keterlambatan",
     url: "/laporan-keterlambatan",
+    icon: IconClock,
+  },
+    {
+    title: "Laporan Keterlambatan Sholat",
+    url: "/laporan-keterlambatan-sholat",
     icon: IconClock,
   },
 ]
