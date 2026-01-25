@@ -12,6 +12,14 @@ import { useEffect, useState } from "react"
 import { KeterlambatanSholat, Siswa } from "./types"
 import api from "@/lib/axios"
 
+/* =========================
+ * TYPE
+ * ========================= */
+type StatusSholat = "masbuk" | "bubar_awal" | "bersembunyi"
+
+/* =========================
+ * PROPS
+ * ========================= */
 interface FormDialogProps {
   open: boolean
   onClose: () => void
@@ -23,11 +31,17 @@ interface FormDialogProps {
   >
 }
 
+/* =========================
+ * DEFAULT FORM
+ * ========================= */
 const DEFAULT_FORM: Partial<KeterlambatanSholat> = {
   sholat: "dzuhur",
   status: "masbuk",
 }
 
+/* =========================
+ * COMPONENT
+ * ========================= */
 export function FormDialog({
   open,
   onClose,
@@ -69,12 +83,15 @@ export function FormDialog({
           }}
           className="space-y-4"
         >
-          {/* siswa */}
+          {/* SISWA */}
           <select
             className="w-full border px-3 py-2 rounded"
             value={form.siswa_id || ""}
             onChange={e =>
-              setForm({ ...form, siswa_id: Number(e.target.value) })
+              setForm({
+                ...form,
+                siswa_id: Number(e.target.value),
+              })
             }
             required
           >
@@ -91,7 +108,7 @@ export function FormDialog({
             </p>
           )}
 
-          {/* sholat */}
+          {/* SHOLAT */}
           <select
             className="w-full border px-3 py-2 rounded"
             value={form.sholat || ""}
@@ -113,7 +130,7 @@ export function FormDialog({
             </p>
           )}
 
-          {/* tanggal */}
+          {/* TANGGAL */}
           <Input
             type="date"
             value={form.tanggal || ""}
@@ -128,21 +145,27 @@ export function FormDialog({
             </p>
           )}
 
-          {/* waktu datang */}
+          {/* WAKTU DATANG */}
           <Input
             type="time"
             value={form.waktu_datang || ""}
             onChange={e =>
-              setForm({ ...form, waktu_datang: e.target.value })
+              setForm({
+                ...form,
+                waktu_datang: e.target.value,
+              })
             }
           />
 
-          {/* status */}
+          {/* STATUS */}
           <select
             className="w-full border px-3 py-2 rounded"
             value={form.status || "masbuk"}
             onChange={e =>
-              setForm({ ...form, status: e.target.value as any })
+              setForm({
+                ...form,
+                status: e.target.value as StatusSholat,
+              })
             }
             required
           >
@@ -160,12 +183,15 @@ export function FormDialog({
             </p>
           )}
 
-          {/* keterangan */}
+          {/* KETERANGAN */}
           <Input
             placeholder="Keterangan"
             value={form.keterangan || ""}
             onChange={e =>
-              setForm({ ...form, keterangan: e.target.value })
+              setForm({
+                ...form,
+                keterangan: e.target.value,
+              })
             }
           />
 

@@ -8,41 +8,53 @@ import axios from "axios"
 import { Siswa, KeterlambatanSholat } from "./types"
 import { ComboboxWithSearch } from "./ComboboxWithSearch"
 
+/* =========================
+ * TYPE
+ * ========================= */
+type StatusSholat = "masbuk" | "bubar_awal" | "bersembunyi"
+
+/* =========================
+ * DEFAULT FORM
+ * ========================= */
+const DEFAULT_FORM: Partial<KeterlambatanSholat> = {
+  sholat: "dzuhur",
+  status: "masbuk",
+}
+
+/* =========================
+ * COMPONENT
+ * ========================= */
 export function QuickFormSholat({
   onSuccess,
 }: {
   onSuccess: (data: KeterlambatanSholat) => void
 }) {
-  const DEFAULT_FORM: Partial<KeterlambatanSholat> = {
-    sholat: "dzuhur",
-    status: "masbuk",
-  }
   const [form, setForm] = useState<Partial<KeterlambatanSholat>>(DEFAULT_FORM)
-
-  // const [form, setForm] = useState<Partial<KeterlambatanSholat>>({
-  //   sholat: "dzuhur",
-  //   status: "masbuk",
-  // })
   const [siswaList, setSiswaList] = useState<Siswa[]>([])
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
 
-
-
-
+  /* =========================
+   * FETCH SISWA
+   * ========================= */
   const fetchSiswa = async () => {
     setRefreshing(true)
-    const res = await api.get("/siswas/for-pencatatan")
-    setSiswaList(res.data.data)
-    setRefreshing(false)
+    try {
+      const res = await api.get("/siswas/for-pencatatan")
+      setSiswaList(res.data.data)
+    } finally {
+      setRefreshing(false)
+    }
   }
 
   useEffect(() => {
     fetchSiswa()
-    // setForm({})
   }, [])
 
+  /* =========================
+   * SUBMIT
+   * ========================= */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
@@ -56,11 +68,10 @@ export function QuickFormSholat({
       })
 
       setErrors({})
-      // setForm({})
       setForm(DEFAULT_FORM)
       onSuccess(res.data)
 
-      // tandai siswa sudah dicatat (opsional, UI feedback)
+      // Tandai siswa sudah dicatat (UI feedback)
       setSiswaList(prev =>
         prev.map(s =>
           s.id === form.siswa_id
@@ -69,9 +80,8 @@ export function QuickFormSholat({
         )
       )
 
-      setTimeout(() => {
-        fetchSiswa()
-      }, 5000)
+      // Refresh list siswa setelah beberapa detik
+      setTimeout(fetchSiswa, 5000)
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.status === 422) {
         setErrors(err.response.data.errors)
@@ -81,7 +91,9 @@ export function QuickFormSholat({
     }
   }
 
-  
+  /* =========================
+   * RENDER
+   * ========================= */
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {refreshing && (
@@ -90,7 +102,7 @@ export function QuickFormSholat({
         </p>
       )}
 
-      {/* pilih siswa */}
+      {/* PILIH SISWA */}
       <ComboboxWithSearch
         options={siswaList.map(siswa => ({
           value: siswa.id,
@@ -103,18 +115,17 @@ export function QuickFormSholat({
         placeholder="Cari nama siswa..."
       />
       {errors?.siswa_id && (
-        <p className="text-sm text-red-600">
-          {errors.siswa_id[0]}
-        </p>
+        <p className="text-sm text-red-600">{errors.siswa_id[0]}</p>
       )}
 
-      {/* pilih sholat */}
+      {/* PILIH SHOLAT */}
       <select
         className="w-full border rounded p-2"
         value={form.sholat || ""}
         onChange={e =>
           setForm({ ...form, sholat: e.target.value })
         }
+        required
       >
         <option value="">Pilih sholat</option>
         <option value="subuh">Subuh</option>
@@ -124,32 +135,34 @@ export function QuickFormSholat({
         <option value="isya">Isya</option>
       </select>
       {errors?.sholat && (
-        <p className="text-sm text-red-600">
-          {errors.sholat[0]}
-        </p>
+        <p className="text-sm text-red-600">{errors.sholat[0]}</p>
       )}
 
-      {/* pilih status */}
+      {/* PILIH STATUS */}
       <select
         className="w-full border rounded p-2"
         value={form.status || "masbuk"}
         onChange={e =>
-          setForm({ ...form, status: e.target.value as any })
+          setForm({
+            ...form,
+            status: e.target.value as StatusSholat,
+          })
         }
+        required
       >
         <option value="masbuk">Masbuk</option>
-        <option value="bubar_awal">Bubar sebelum selesai / ke kantin</option>
-        <option value="bersembunyi">Bersembunyi (tidak ke masjid)</option>
+        <option value="bubar_awal">
+          Bubar sebelum selesai / ke kantin
+        </option>
+        <option value="bersembunyi">
+          Bersembunyi (tidak ke masjid)
+        </option>
       </select>
-
       {errors?.status && (
-        <p className="text-sm text-red-600">
-          {errors.status[0]}
-        </p>
+        <p className="text-sm text-red-600">{errors.status[0]}</p>
       )}
 
-
-      {/* keterangan */}
+      {/* KETERANGAN */}
       <Input
         placeholder="Keterangan (opsional)"
         value={form.keterangan || ""}
