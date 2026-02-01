@@ -10,7 +10,7 @@
 !.yarn/releases
 !.yarn/versions
 
-/src/lib/axios.ts
+/src/lib/axios.*
 
 # testing
 /coverage
