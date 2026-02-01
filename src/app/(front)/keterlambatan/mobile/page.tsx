@@ -29,7 +29,7 @@ export default function MobileKeterlambatanPage() {
   return (
     <WithSidebar>
     <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold text-center">Catat Keterlambatan</h1>
+     
 
       <QuickForm onSuccess={handleSuccess} />
 

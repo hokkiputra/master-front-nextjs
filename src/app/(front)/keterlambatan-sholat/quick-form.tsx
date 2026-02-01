@@ -1,179 +1,102 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
 import api from "@/lib/axios"
-import axios from "axios"
-import { Siswa, KeterlambatanSholat } from "./types"
+import { Input } from "@/components/ui/input"
 import { ComboboxWithSearch } from "./ComboboxWithSearch"
+import { Siswa } from "./types"
 
-/* =========================
- * TYPE
- * ========================= */
-type StatusSholat = "masbuk" | "bubar_awal" | "bersembunyi"
-
-/* =========================
- * DEFAULT FORM
- * ========================= */
-const DEFAULT_FORM: Partial<KeterlambatanSholat> = {
-  sholat: "dzuhur",
-  status: "masbuk",
-}
-
-/* =========================
- * COMPONENT
- * ========================= */
 export function QuickFormSholat({
-  onSuccess,
+  tempList,
+  globalForm,
+  onFormChange,
+  onAdd,
 }: {
-  onSuccess: (data: KeterlambatanSholat) => void
-}) {
-  const [form, setForm] = useState<Partial<KeterlambatanSholat>>(DEFAULT_FORM)
-  const [siswaList, setSiswaList] = useState<Siswa[]>([])
-  const [loading, setLoading] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
-  const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
-
-  /* =========================
-   * FETCH SISWA
-   * ========================= */
-  const fetchSiswa = async () => {
-    setRefreshing(true)
-    try {
-      const res = await api.get("/siswas/for-pencatatan")
-      setSiswaList(res.data.data)
-    } finally {
-      setRefreshing(false)
-    }
+  tempList: { siswa_id: number }[]
+  globalForm: {
+    sholat: string
+    status: string
+    keterangan: string
   }
+  onFormChange: (val: {
+    sholat: string
+    status: string
+    keterangan: string
+  }) => void
+  onAdd: (data: {
+    siswa_id: number
+    siswa?: { nama: string; kelas: string }
+  }) => void
+}) {
+  const [siswaList, setSiswaList] = useState<Siswa[]>([])
 
   useEffect(() => {
-    fetchSiswa()
+    api.get("/siswas/for-pencatatan")
+      .then(res => setSiswaList(res.data.data))
   }, [])
 
-  /* =========================
-   * SUBMIT
-   * ========================= */
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      const res = await api.post("/keterlambatan-sholat/quick", {
-        siswa_id: form.siswa_id,
-        sholat: form.sholat,
-        status: form.status,
-        keterangan: form.keterangan,
-      })
-
-      setErrors({})
-      setForm(DEFAULT_FORM)
-      onSuccess(res.data)
-
-      // Tandai siswa sudah dicatat (UI feedback)
-      setSiswaList(prev =>
-        prev.map(s =>
-          s.id === form.siswa_id
-            ? { ...s, sudah_dicatat_sholat: true }
-            : s
-        )
-      )
-
-      // Refresh list siswa setelah beberapa detik
-      setTimeout(fetchSiswa, 5000)
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err) && err.response?.status === 422) {
-        setErrors(err.response.data.errors)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  /* =========================
-   * RENDER
-   * ========================= */
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {refreshing && (
-        <p className="text-sm text-muted-foreground">
-          Memuat data siswa terbaru...
-        </p>
-      )}
-
+    <div className="space-y-4">
       {/* PILIH SISWA */}
+      
       <ComboboxWithSearch
-        options={siswaList.map(siswa => ({
-          value: siswa.id,
-          label: `${siswa.nama} (${siswa.kelas})`,
+        options={siswaList.map(s => ({
+          value: s.id,
+          label: `${s.nama} (${s.kelas})`,
+          disabled: tempList.some(t => t.siswa_id === s.id),
         }))}
-        value={form.siswa_id || ""}
-        onChange={val =>
-          setForm({ ...form, siswa_id: Number(val) })
-        }
-        placeholder="Cari nama siswa..."
-      />
-      {errors?.siswa_id && (
-        <p className="text-sm text-red-600">{errors.siswa_id[0]}</p>
-      )}
+        value=""
+        onChange={(val) => {
+          const siswa = siswaList.find(s => s.id === Number(val))
+          if (!siswa) return
 
-      {/* PILIH SHOLAT */}
+          onAdd({
+            siswa_id: siswa.id,
+            siswa: { nama: siswa.nama, kelas: siswa.kelas },
+          })
+        }}
+        placeholder="Cari dan pilih siswa..."
+      />
+
+      {/* FORM GLOBAL */}
       <select
         className="w-full border rounded p-2"
-        value={form.sholat || ""}
+        value={globalForm.sholat}
         onChange={e =>
-          setForm({ ...form, sholat: e.target.value })
+          onFormChange({ ...globalForm, sholat: e.target.value })
         }
-        required
       >
-        <option value="">Pilih sholat</option>
         <option value="subuh">Subuh</option>
         <option value="dzuhur">Dzuhur</option>
         <option value="ashar">Ashar</option>
         <option value="maghrib">Maghrib</option>
         <option value="isya">Isya</option>
       </select>
-      {errors?.sholat && (
-        <p className="text-sm text-red-600">{errors.sholat[0]}</p>
-      )}
 
-      {/* PILIH STATUS */}
       <select
         className="w-full border rounded p-2"
-        value={form.status || "masbuk"}
+        value={globalForm.status}
         onChange={e =>
-          setForm({
-            ...form,
-            status: e.target.value as StatusSholat,
-          })
+          onFormChange({ ...globalForm, status: e.target.value })
         }
-        required
       >
         <option value="masbuk">Masbuk</option>
-        <option value="bubar_awal">
-          Bubar sebelum selesai / ke kantin
-        </option>
-        <option value="bersembunyi">
-          Bersembunyi (tidak ke masjid)
-        </option>
+        <option value="bubar_awal">Bubar Awal</option>
+        <option value="bersembunyi">Bersembunyi</option>
       </select>
-      {errors?.status && (
-        <p className="text-sm text-red-600">{errors.status[0]}</p>
-      )}
 
-      {/* KETERANGAN */}
       <Input
-        placeholder="Keterangan (opsional)"
-        value={form.keterangan || ""}
+        placeholder="Keterangan (berlaku untuk semua siswa)"
+        value={globalForm.keterangan}
         onChange={e =>
-          setForm({ ...form, keterangan: e.target.value })
+          onFormChange({ ...globalForm, keterangan: e.target.value })
         }
       />
 
-      <Button type="submit" disabled={loading} className="w-full">
-        {loading ? "Menyimpan..." : "Simpan"}
-      </Button>
-    </form>
+      <p className="text-xs text-muted-foreground">
+        Nilai sholat, status, dan keterangan yang tersimpan adalah
+        kondisi TERAKHIR saat tombol <b>Simpan Semua</b> ditekan.
+      </p>
+    </div>
   )
 }
